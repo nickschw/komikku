@@ -7,6 +7,7 @@ import eu.kanade.domain.manga.model.getComicInfo
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.tachiyomi.data.export.EpubExportJob
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.notification.NotificationHandler
 import eu.kanade.tachiyomi.source.UnmeteredSource
@@ -68,6 +69,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * This class is the one in charge of downloading chapters.
@@ -158,6 +160,9 @@ class Downloader(
      */
     fun stop(reason: String? = null) {
         cancelDownloaderJob()
+        // KMK -->
+        exportDownloadedManga()
+        // KMK <--
         queueState.value
             .filter { it.status == Download.State.DOWNLOADING }
             .forEach { it.status = Download.State.ERROR }
@@ -177,6 +182,25 @@ class Downloader(
 
         DownloadJob.stop(context)
     }
+
+    // KMK -->
+    /**
+     * Series that finished downloading chapters since the last EPUB export.
+     */
+    private val mangaToExport: MutableSet<Long> = ConcurrentHashMap.newKeySet()
+
+    /**
+     * Rebuilds the EPUB of every series that got new chapters, in the background.
+     */
+    private fun exportDownloadedManga() {
+        if (mangaToExport.isEmpty()) return
+        val mangaIds = mangaToExport.toList()
+        mangaToExport.removeAll(mangaIds.toSet())
+        if (downloadPreferences.exportEpubAfterDownload().get()) {
+            EpubExportJob.export(context, mangaIds)
+        }
+    }
+    // KMK <--
 
     /**
      * Pauses the downloader
@@ -258,6 +282,9 @@ class Downloader(
             // Remove successful download from queue
             if (download.status == Download.State.DOWNLOADED) {
                 removeFromQueue(download)
+                // KMK -->
+                mangaToExport.add(download.manga.id)
+                // KMK <--
             }
             if (areAllDownloadsFinished()) {
                 stop()

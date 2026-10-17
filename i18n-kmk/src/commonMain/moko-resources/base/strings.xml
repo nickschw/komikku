@@ -238,4 +238,11 @@
     <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
     <string name="pref_discord_show_discord_button">Show Discord Button</string>
     <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
+    <!-- EPUB export -->
+    <string name="pref_category_epub_export">EPUB export</string>
+    <string name="pref_epub_export_after_download">Export series as EPUB after downloading</string>
+    <string name="pref_epub_export_after_download_summary">Keeps one EPUB per series in the epub folder of your storage location, for readers like Readest</string>
+    <string name="action_epub_export_all">Export all downloaded series now</string>
+    <string name="epub_export_started">EPUB export started</string>
+    <string name="epub_export_notification_title">Exporting EPUB</string>
 </resources>

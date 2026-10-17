@@ -88,6 +88,12 @@ class StorageManager(
     }
     // SY <--
 
+    // KMK -->
+    fun getEpubExportDirectory(): UniFile? {
+        return baseDir?.createDirectory(EPUB_EXPORT_PATH)
+    }
+    // KMK <--
+
     companion object {
         // KMK -->
         /**
@@ -226,3 +232,7 @@ private const val LOCAL_SOURCE_PATH = "local"
 // SY -->
 private const val LOGS_PATH = "logs"
 // SY <--
+
+// KMK -->
+private const val EPUB_EXPORT_PATH = "epub"
+// KMK <--

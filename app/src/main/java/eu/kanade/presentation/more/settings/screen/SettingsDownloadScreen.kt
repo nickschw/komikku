@@ -8,10 +8,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.util.fastMap
 import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.widget.TriStateListDialog
+import eu.kanade.tachiyomi.data.export.EpubExportJob
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
@@ -80,6 +83,7 @@ object SettingsDownloadScreen : SearchableSettings {
             getDownloadAheadGroup(downloadPreferences = downloadPreferences),
             // KMK -->
             getDownloadCacheRenewInterval(downloadPreferences = downloadPreferences),
+            getEpubExportGroup(downloadPreferences = downloadPreferences),
             // KMK <--
         )
     }
@@ -238,6 +242,31 @@ object SettingsDownloadScreen : SearchableSettings {
                     title = stringResource(KMR.strings.download_cache_renew_interval),
                 ),
                 Preference.PreferenceItem.InfoPreference(stringResource(KMR.strings.download_cache_renew_interval_info)),
+            ),
+        )
+    }
+
+    @Composable
+    private fun getEpubExportGroup(
+        downloadPreferences: DownloadPreferences,
+    ): Preference.PreferenceGroup {
+        val context = LocalContext.current
+        val exportStarted = stringResource(KMR.strings.epub_export_started)
+        return Preference.PreferenceGroup(
+            title = stringResource(KMR.strings.pref_category_epub_export),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = downloadPreferences.exportEpubAfterDownload(),
+                    title = stringResource(KMR.strings.pref_epub_export_after_download),
+                    subtitle = stringResource(KMR.strings.pref_epub_export_after_download_summary),
+                ),
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(KMR.strings.action_epub_export_all),
+                    onClick = {
+                        EpubExportJob.exportAll(context)
+                        context.toast(exportStarted)
+                    },
+                ),
             ),
         )
     }
